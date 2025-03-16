@@ -3,7 +3,6 @@ import sqlite3
 import logging
 
 app = Flask(__name__)
-
 # logging setup
 logging.basicConfig(filename='exploit.log', level=logging.INFO,
                     format='%(asctime)s - %(message)s')
@@ -19,11 +18,11 @@ def login():
     
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
-    
-    # vulnerablilty = SQL injection
-    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+    # safe - string concatenation no more!
+    query = "SELECT * FROM users WHERE username = ? AND password = ?"
+    logging.info(f"executing query: {query} with params ({username}, {password})")
     try:
-        cursor.execute(query)
+        cursor.execute(query, (username, password))
         result = cursor.fetchone()
     except sqlite3.Error as e:
         logging.error(f"SQL error: {e}")

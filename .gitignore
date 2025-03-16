@@ -1,3 +1,4 @@
 exploit.log
 *.log 
-users.db 
+users.db
+node_modules 

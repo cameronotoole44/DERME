@@ -31,8 +31,11 @@ def login():
     conn.close()
     
     if result:
-        return "successful login!"
-    return "failed to login"
+        logging.info(f"login success - returned: {result}")
+        return "successful login!", 200
+    else:
+        logging.info(f"login failed - no result")
+        return "failed to login", 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)   

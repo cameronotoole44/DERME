@@ -25,46 +25,81 @@ DERME is a web security demonstration tool showcasing four common vulnerabilitie
 
 ### XSS Exploit
 
-![XSS Demo](gifs/xss.gif)
+![XSS Demo](gifs/XSS.gif)
 
 - Unmitigated: Script executes. Mitigated: Script is escaped.
 
 ### SQLi Exploit
 
-![SQLi Demo](gifs/sqli.gif)
+![SQLi Demo](gifs/SQLi.gif)
 
 - Unmitigated: Login succeeds. Mitigated: Login fails.
 
 ### CSRF Exploit
 
-![CSRF Demo](gifs/csrf.gif)
+![CSRF Demo](gifs/CSRF.gif)
 
 - Unmitigated: Funds transfer. Mitigated: Token required.
 
 ### LFI Exploit
 
-![LFI Demo](gifs/lfi.gif)
+![LFI Demo](gifs/LFI.gif)
 
 - Unmitigated: File error. Mitigated: Safe file returned.
 
 ## Setup
 
-1. **Clone the Repo**:
-   ```bash
-   git clone https://github.com/yourusername/derme.git
-   cd derme
-   ```
-2. **Backend**:
-   ```bash
-   cd backend/vuln_app
-   docker build -t vuln-app .
-   cd ../exploit_engine
-   python exploit_engine.py
-   ```
-3. **Frontend**:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-4. Open http://localhost:5173 and start the exploits!
+1.  **Clone the Repo**:
+    ```bash
+        git clone https://github.com/cameronotoole44/DERME
+        cd derme
+    ```
+2.  **Backend Setup**:
+
+    - _Prerequisites_: Docker
+
+    **Virtual Environment**
+
+    ```bash
+        # Linux/Mac
+
+        cd backend/exploit_engine
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+    ```
+
+    ```bash
+        # Windows (Command Prompt)
+
+        cd backend\exploit_engine
+        python -m venv venv
+        venv\Scripts\activate
+        pip install -r requirements.txt
+    ```
+
+    ```bash
+        # Windows (Git Bash)
+
+        cd backend/exploit_engine
+        python -m venv venv
+        source venv/Scripts/activate
+        pip install -r requirements.txt
+    ```
+
+3.  **Start Backend**
+
+    ```bash
+        cd backend/vuln_app
+        docker build -t vuln-app .
+        cd ../exploit_engine
+        python exploit_engine.py
+    ```
+
+4.  **Frontend**:
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+5.  Open http://localhost:5173 and start the exploits!

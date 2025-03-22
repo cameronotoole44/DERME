@@ -12,6 +12,7 @@ const App = () => {
     try {
       const resp = await fetch("http://localhost:5000/exploit");
       const data = await resp.json();
+      // console.log("XSS Raw Response:", data.response);
       setXssResult(data.response || "Error: No response");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
@@ -91,7 +92,7 @@ const App = () => {
         <button onClick={reset}>Reset</button>
       </div>
       <h2>XSS Result:</h2>
-      <pre dangerouslySetInnerHTML={{ __html: xssResult }} />
+      <pre>{xssResult}</pre>
       <h2>SQLi Result:</h2>
       <pre>{sqliResult}</pre>
       <h2>CSRF Result:</h2>

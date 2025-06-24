@@ -1,104 +1,168 @@
-import { useState } from "react";
-import "./App.css";
+import { useState, useEffect } from "react";
+import "./css/App.css";
+import TerminalWindow from "./components/Terminal";
+import TiledResult from "./components/Tiled";
+
+type ExploitType = "menu" | "xss" | "sqli" | "csrf" | "lfi";
 
 const App = () => {
-  const [xssResult, setXssResult] = useState<string>("");
-  const [sqliResult, setSqliResult] = useState<string>("");
-  const [csrfResult, setCsrfResult] = useState<string>("");
-  const [lfiResult, setLfiResult] = useState<string>("");
+  const [view, setView] = useState<ExploitType>("menu");
+  const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const [mitigated, setMitigated] = useState(false);
+  const [matrixLines, setMatrixLines] = useState<string[]>([]);
+  const [booting, setBooting] = useState(true);
+  const [bootOutput, setBootOutput] = useState<string[]>([]);
 
-  const runXssExploit = async () => {
-    try {
-      const resp = await fetch("http://localhost:5000/exploit");
-      const data = await resp.json();
-      // console.log("XSS Raw Response:", data.response);
-      setXssResult(data.response || "Error: No response");
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      setXssResult(`XSS Exploit Failed: ${message}`);
-    }
+  useEffect(() => {
+    const lines = [
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⣉⣤⣶⣿⣿⣿⣿⣶⣦⣉⣙⠿⢿⣿⣿⣿⠿⠟⣋⣉⣡⣤⣤⣉⣛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢋⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣍⠡⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣷⡌⢻⣿⣿⣿⣿⣿⣿⣿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⣡⣾⣿⣿⣿⣿⣿⠿⠟⢛⣛⣛⣛⠛⠻⢿⣿⣿⣆⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡌⣿⣿⣿⣿⣿⣿⣿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⠋⣼⣿⣿⣿⣿⡟⣉⣤⣶⣾⣿⣿⣿⣿⣿⣷⣦⣬⣙⡛⠀⣛⣩⣭⣭⣭⣭⣭⣥⣭⣬⣍⣁⡘⢿⣿⣿⣿⣿⣿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⠏⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠛⢛⣛⣛⣛⣛⠒⠌⠛⢿⣿⣿⣿⡿⠿⠿⠟⠛⠛⠛⠓⠦⠌⠙⠻⣿⣿",
+      "⣿⣿⣿⣿⡿⠿⠀⠈⠙⠛⠻⠿⢿⣿⠿⠿⠛⠛⠛⠉⠐⠒⠚⠉⠉⠐⠒⠂⠉⠉⠓⠒⠦⠋⡩⠔⠒⠀⠀⠉⠉⠉⠉⠉⠁⠀⠀⠀⠈⠛",
+      "⣿⣿⣿⠛⣤⡆⢸⣷⣶⣦⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⢀⠀⠀⠀⠀",
+      "⣿⡿⢡⣾⣿⣇⣸⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀",
+      "⡿⢁⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢾⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+      "⢡⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣆⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⢀⣤⣶⣶⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣾⣿⣿⠿⣿⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣶⠶⠖⢒⣀⣤⣶⣾⣿⣿⣿⣿⣿⣦⣤⡀⢭⣤⣤⣤⣴⣄⢒⢶⣾⣿⣿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣿⣿⣿⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⣿⣿⣿⣿⣿⣿⣆⠙⣿⣿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢁⣤⣶⣶⣶⣌⠙⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣿⣿⡿⠿⣿⣿⣿⣶⣦⣌⣙⠛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠸⢿⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡈⢻⣿⣷⣶⣤⣝⡛⠛⠿⣿⣿⣷⣶⣶⣮⣭⣭⣭⣝⣛⡛⠛⠛⠛⠛⠻⠟⠛⠛⢛⣫⣥⣴⣾⡿⢸⣿",
+      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣤⡙⠻⢿⣿⣿⣿⣷⣶⣦⣬⣭⣙⡙⠛⠛⠻⠿⠿⠿⠿⠿⠿⣿⣿⣷⣾⣿⡿⠿⠿⠟⠛⣩⣶⣿⣿",
+      "⣤⠄⠉⠙⠛⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣤⣍⡛⠛⠿⠿⣿⣿⣿⣿⣿⣿⣾⣿⣷⣿⣶⣿⣶⣶⣶⣶⣶⠶⠶⠛⠚⠈⣁⣬⡍⠥⢠",
+      "⣷⠡⠈⠋⠳⠂⠔⠀⣈⠛⠻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣤⣤⣤⣤⣤⣈⣉⣉⣉⣉⡉⡙⠛⠛⠋⡀⠐⢶⣶⠾⠡⣨⡽⣆⢢⣺",
+      "⣿⠄⠀⠈⡕⠀⠴⣿⣿⡿⢷⠂⢤⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⢠⠤⠲⠀⡈⢹⠷⠄⠑⣿⠄⠘⡀⠈⠉⣁",
+      "⣀⠀⠀⣁⣀⠀⢀⠊⠀⢰⠀⣆⠀⠡⡈⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠋⣠⢁⠀⠆⠀⠀⡈⢂⠰⣤⣬⣭⣤⣤⣤⣤⣤",
+      "⢃⡒⣚⠋⣓⠀⣀⡐⢀⡚⢀⡘⢀⡀⢀⡐⣒⡒⢀⡀⢀⡀⢀⡉⢉⡉⢁⡁⢀⡀⢒⡀⠀⣃⠘⣲⠒⣒⠚⣓⠈⡄⠹⠿⠙⠿⠋⠿⠿⣿",
+      "⡎⢀⣉⣀⣉⣁⣉⣁⣉⣁⣈⣁⣉⣁⣈⣁⣉⣁⣈⣁⣈⣁⣈⣁⣈⣁⣠⣤⣄⣡⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⡆⢿",
+      "⡇⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢸",
+
+      "",
+      "><<<<<    ><<<<<<<<><<<<<<<    ><<       ><<><<<<<<<<",
+      "><<   ><< ><<      ><<    ><<  >< ><<   ><<<><<",
+      "><<    ><<><<      ><<    ><<  ><< ><< > ><<><< ",
+      "><<    ><<><<<<<<  >< ><<      ><<  ><<  ><<><<<<<<  ",
+      "><<    ><<><<      ><<  ><<    ><<   ><  ><<><< ",
+      "><<   ><< ><<      ><<    ><<  ><<       ><<><< ",
+      "><<<<<    ><<<<<<<<><<      ><<><<       ><<><<<<<<<<",
+      "",
+      "[BOOT] Initializing Core Systems...",
+      "[ OK ] Loading Exploit Modules",
+      "[ OK ] Network Layer Linked",
+      "[ OK ] Payload Injection Ready",
+      "Welcome User",
+    ];
+
+    let idx = 0;
+    const interval = setInterval(() => {
+      setBootOutput((prev) => [...prev, lines[idx]]);
+      idx++;
+      if (idx >= lines.length) {
+        clearInterval(interval);
+        setTimeout(() => setBooting(false), 1000);
+      }
+    }, 600);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchExploit = async (endpoint: string, label: ExploitType) => {
+    setLoading(true);
+    setMatrixLines([]);
+    setTerminalOutput([]);
+    setView(label);
+
+    const interval = setInterval(() => {
+      setMatrixLines((prev) => [...prev.slice(-15), generateMatrixLine()]);
+    }, 60);
+
+    setTimeout(async () => {
+      clearInterval(interval);
+      setMatrixLines([]);
+
+      try {
+        const resp = await fetch(`http://localhost:5000/${endpoint}`);
+        const data = await resp.json();
+        const output = (data.response || data.error || "Unknown Error").split(
+          "\n"
+        );
+        setTerminalOutput(output);
+      } catch {
+        setTerminalOutput(["[ERROR] Exploit failed."]);
+      }
+
+      setLoading(false);
+    }, 3000);
   };
 
-  const runSqliExploit = async () => {
-    try {
-      const resp = await fetch("http://localhost:5000/exploit_sqli");
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-      const data = await resp.json();
-      setSqliResult(JSON.stringify(data.response || data.error, null, 2));
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      setSqliResult(`SQLi Exploit Failed: ${message}`);
-    }
-  };
-
-  const runCsrfExploit = async () => {
-    try {
-      const resp = await fetch("http://localhost:5000/exploit_csrf");
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-      const data = await resp.json();
-      setCsrfResult(JSON.stringify(data.response || data.error, null, 2));
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      setCsrfResult(`CSRF Exploit Failed: ${message}`);
-    }
-  };
-
-  const runLfiExploit = async () => {
-    try {
-      const resp = await fetch("http://localhost:5000/exploit_lfi");
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-      const data = await resp.json();
-      setLfiResult(JSON.stringify(data.response || data.error, null, 2));
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      setLfiResult(`LFI Exploit Failed: ${message}`);
-    }
-  };
-
-  const applyMitigation = async () => {
-    try {
-      await fetch("http://localhost:5000/mitigate", { method: "POST" });
-      setMitigated(true); // SET ONLY HERE
-    } catch (error: unknown) {
-      console.error("Mitigation failed:", error);
-    }
+  const generateMatrixLine = () => {
+    const chars = "01|\\/#@-=:*%";
+    const length = Math.floor(Math.random() * 60) + 20;
+    return Array.from(
+      { length },
+      () => chars[Math.floor(Math.random() * chars.length)]
+    ).join("");
   };
 
   const reset = async () => {
-    try {
-      await fetch("http://localhost:5000/reset", { method: "POST" });
-      setXssResult("");
-      setSqliResult("");
-      setCsrfResult("");
-      setLfiResult("");
-      setMitigated(false); // RESET HERE ONLY
-    } catch (error: unknown) {
-      console.error("Reset failed:", error);
-    }
+    await fetch("http://localhost:5000/reset", { method: "POST" });
+    setMitigated(false);
+    setView("menu");
+    setTerminalOutput([]);
+  };
+
+  const applyMitigation = async () => {
+    await fetch("http://localhost:5000/mitigate", { method: "POST" });
+    setMitigated(true);
   };
 
   return (
     <div className="app-container">
-      <h1>DERME 2.0</h1>
-      <div className="button-group">
-        <button onClick={runXssExploit}>Run XSS Exploit</button>
-        <button onClick={runSqliExploit}>Run SQLi Exploit</button>
-        <button onClick={runCsrfExploit}>Run CSRF Exploit</button>
-        <button onClick={runLfiExploit}>Run LFI Exploit</button>
-        <button onClick={applyMitigation} disabled={mitigated}>
-          Apply Mitigation
-        </button>
-        <button onClick={reset}>Reset</button>
-      </div>
-      <h2>XSS Result:</h2>
-      <pre>{xssResult}</pre>
-      <h2>SQLi Result:</h2>
-      <pre>{sqliResult}</pre>
-      <h2>CSRF Result:</h2>
-      <pre>{csrfResult}</pre>
-      <h2>LFI Result:</h2>
-      <pre>{lfiResult}</pre>
+      <h1>D.E.R.M.E</h1>
+
+      {booting ? (
+        <TerminalWindow
+          title="System Boot"
+          lines={bootOutput}
+          onExit={() => {}}
+        />
+      ) : view === "menu" ? (
+        <div className="button-group">
+          <button onClick={() => fetchExploit("exploit", "xss")}>
+            Run XSS
+          </button>
+          <button onClick={() => fetchExploit("exploit_sqli", "sqli")}>
+            Run SQLi
+          </button>
+          <button onClick={() => fetchExploit("exploit_csrf", "csrf")}>
+            Run CSRF
+          </button>
+          <button onClick={() => fetchExploit("exploit_lfi", "lfi")}>
+            Run LFI
+          </button>
+          <button onClick={applyMitigation} disabled={mitigated}>
+            Mitigate
+          </button>
+          <button onClick={reset}>Reset</button>
+        </div>
+      ) : loading ? (
+        <TerminalWindow
+          title="Executing Exploit..."
+          lines={matrixLines}
+          onExit={() => setView("menu")}
+        />
+      ) : (
+        <TiledResult
+          exploitType={view}
+          resultLines={terminalOutput}
+          onExit={() => setView("menu")}
+        />
+      )}
     </div>
   );
 };

@@ -1,0 +1,145 @@
+@font-face {
+  font-family: "Hack";
+  src: url("./fonts/Hack-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* body {
+  margin: 0;
+  padding: 0;
+  background-color: #081b26;
+  color: #f9f5ec;
+  font-family: "Hack", monospace;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+} */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #081b26;
+  color: #f9f5ec;
+  font-family: "Hack", monospace;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 95%;
+  max-width: 960px;
+  padding: 30px;
+  background-color: #081b26;
+  color: #f9f5ec;
+  border: 2px solid #586166;
+  box-shadow:
+    0 0 5px #f2766b44,
+    0 0 20px #f2766b33,
+    inset 0 0 12px #f2766b22;
+  overflow: visible;
+  z-index: 1;
+  text-align: center;
+}
+
+.app-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, #000c 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+h1 {
+  font-size: 22px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #f2766b;
+  text-shadow: 0 0 5px #f2766b;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 2;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 2;
+}
+
+button {
+  padding: 8px 16px;
+  font-family: "Hack", monospace;
+  background-color: transparent;
+  border: 1px solid #f2766b;
+  color: #f2766b;
+  text-transform: uppercase;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover:not(:disabled) {
+  background-color: #f2766b22;
+  box-shadow: 0 0 8px #f2766b;
+  color: #f9f5ec;
+}
+
+button:disabled {
+  border-color: #586166;
+  color: #586166;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.centered-ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10vh;
+}
+
+.boot-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; 
+  width: 100vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: #081b26;
+}
+
+.menu-center {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  text-align: center;
+}
+
+.menu-center h1 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #f2766b;
+  text-shadow: 0 0 5px #f2766b;
+}
+

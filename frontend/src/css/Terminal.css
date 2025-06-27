@@ -1,0 +1,87 @@
+.terminal-window {
+  background-color: #081b26;
+  color: #f9f5ec;
+  border: 1px solid #586166;
+  padding: 20px;
+  font-family: "Hack", monospace;
+  font-size: 14px;
+  max-height: none;
+  white-space: pre;
+  overflow: hidden;
+  box-shadow: 0 0 10px #f2766b33, inset 0 0 6px #f2766b22;
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+}
+
+
+.terminal-window::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 2px,
+    rgba(242, 118, 107, 0.02) 3px
+  );
+  pointer-events: none;
+  z-index: 3;
+}
+
+.terminal-body {
+  white-space: pre;
+  overflow: hidden;
+}
+
+
+.terminal-header {
+  font-weight: bold;
+  color: #f2766b;
+  margin-bottom: 10px;
+  text-shadow: 0 0 5px #f2766b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.terminal-line {
+  margin-bottom: 6px;
+  color: #f9f5ec;
+}
+
+.cursor {
+  display: inline-block;
+  width: 10px;
+  height: 16px;
+  background-color: #f2766b;
+  animation: blink 1s step-end infinite;
+  margin-left: 4px;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+button {
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid #f2766b;
+  color: #f2766b;
+  background: transparent;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+button:hover {
+  background-color: #f2766b22;
+  color: #f9f5ec;
+}
+
+

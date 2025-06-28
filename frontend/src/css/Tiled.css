@@ -9,14 +9,16 @@
 }
 
 .draggable-panel {
-  background-color: #0c1e2b;
-  border: 1px solid #586166;
+  background-color: rgba(12, 30, 43, 0.75);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(88, 97, 102, 0.5);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
   padding: 10px;
   border-radius: 6px;
   width: 320px;
   color: #f9f5ec;
-  font-family: monospace;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  font-family: "JetBrains Mono" monospace;
   cursor: move;
 }
 

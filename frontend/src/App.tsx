@@ -20,6 +20,20 @@ const App = () => {
 
   useEffect(() => {
     const lines = [
+      "><<<<<    ><<<<<<<<><<<<<<<    ><<       ><<><<<<<<<<",
+      "><<   ><< ><<      ><<    ><<  >< ><<   ><<<><<",
+      "><<    ><<><<      ><<    ><<  ><< ><< > ><<><< ",
+      "><<    ><<><<<<<<  >< ><<      ><<  ><<  ><<><<<<<<  ",
+      "><<    ><<><<      ><<  ><<    ><<   ><  ><<><< ",
+      "><<   ><< ><<      ><<    ><<  ><<       ><<><< ",
+      "><<<<<    ><<<<<<<<><<      ><<><<       ><<><<<<<<<<",
+      "",
+      "[BOOT] Initializing Core Systems...",
+      "[ OK ] Loading Exploit Modules",
+      "[ OK ] Network Layer Linked",
+      "[ OK ] Payload Injection Ready",
+      "Welcome User",
+
       "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
       "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⣉⣤⣶⣿⣿⣿⣿⣶⣦⣉⣙⠿⢿⣿⣿⣿⠿⠟⣋⣉⣡⣤⣤⣉⣛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
       "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢋⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣍⠡⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣷⡌⢻⣿⣿⣿⣿⣿⣿⣿⣿",
@@ -45,33 +59,18 @@ const App = () => {
       "⢃⡒⣚⠋⣓⠀⣀⡐⢀⡚⢀⡘⢀⡀⢀⡐⣒⡒⢀⡀⢀⡀⢀⡉⢉⡉⢁⡁⢀⡀⢒⡀⠀⣃⠘⣲⠒⣒⠚⣓⠈⡄⠹⠿⠙⠿⠋⠿⠿⣿",
       "⡎⢀⣉⣀⣉⣁⣉⣁⣉⣁⣈⣁⣉⣁⣈⣁⣉⣁⣈⣁⣈⣁⣈⣁⣈⣁⣠⣤⣄⣡⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⡆⢿",
       "⡇⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢸",
-
-      "",
-      "><<<<<    ><<<<<<<<><<<<<<<    ><<       ><<><<<<<<<<",
-      "><<   ><< ><<      ><<    ><<  >< ><<   ><<<><<",
-      "><<    ><<><<      ><<    ><<  ><< ><< > ><<><< ",
-      "><<    ><<><<<<<<  >< ><<      ><<  ><<  ><<><<<<<<  ",
-      "><<    ><<><<      ><<  ><<    ><<   ><  ><<><< ",
-      "><<   ><< ><<      ><<    ><<  ><<       ><<><< ",
-      "><<<<<    ><<<<<<<<><<      ><<><<       ><<><<<<<<<<",
-      "",
-      "[BOOT] Initializing Core Systems...",
-      "[ OK ] Loading Exploit Modules",
-      "[ OK ] Network Layer Linked",
-      "[ OK ] Payload Injection Ready",
-      "Welcome User",
+      "success, you're in",
     ];
 
     let idx = 0;
     const interval = setInterval(() => {
-      setBootOutput((prev) => [...prev, lines[idx]]);
+      setBootOutput((prev) => [...prev.slice(-15), lines[idx]]);
       idx++;
       if (idx >= lines.length) {
         clearInterval(interval);
         setTimeout(() => setBooting(false), 1000);
       }
-    }, 600);
-
+    }, 300); // how fast it moves
     return () => clearInterval(interval);
   }, []);
 
@@ -88,7 +87,6 @@ const App = () => {
     setTimeout(async () => {
       clearInterval(interval);
       setMatrixLines([]);
-
       try {
         const resp = await fetch(`http://localhost:5000/${endpoint}`);
         const data = await resp.json();
@@ -99,7 +97,6 @@ const App = () => {
       } catch {
         setTerminalOutput(["[ERROR] Exploit failed."]);
       }
-
       setLoading(false);
     }, 3000);
   };

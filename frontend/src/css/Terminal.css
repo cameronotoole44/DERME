@@ -1,11 +1,9 @@
 .terminal-window {
   background-color: rgba(8, 27, 38, 0.5);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
   color: #f9f5ec;
   border: 1px solid rgba(88, 97, 102, 0.5);
-    box-shadow: 0 0 10px rgba(242, 118, 107, 0.2),
-                inset 0 0 6px rgba(242, 118, 107, 0.13);
+  box-shadow: 0 0 10px rgba(242, 118, 107, 0.2),
+              inset 0 0 6px rgba(242, 118, 107, 0.13);
   padding: 20px;
   font-family: "JetBrains Mono", monospace;
   font-size: 14px;
@@ -37,8 +35,9 @@
 }
 
 .terminal-body {
-  white-space: pre;
-  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: hidden;
 }
 
 

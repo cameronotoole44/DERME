@@ -1,19 +1,16 @@
 .floating-panel {
   background-color: rgba(8, 27, 38, 0.75);
-  -webkit-backdrop-filter: blur(8px);  
-  backdrop-filter: blur(8px);
   border: 1px solid rgba(88, 97, 102, 0.5);
   box-shadow: 0 0 10px rgba(242, 118, 107, 0.2);;
   color: #f9f5ec;
   font-family: "JetBrains Mono", monospace;
   min-width: 200px;
   min-height: 150px;
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 800px;
+  max-height: 400px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  z-index: 10000000;
 }
 
 .floating-panel.resizable {

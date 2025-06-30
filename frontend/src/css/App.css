@@ -16,7 +16,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 95%;
+  width: 80%;
   max-width: 960px;
   padding: 30px;
   background-color: #081b26;
@@ -27,7 +27,6 @@ body {
     0 0 20px #f2766b33,
     inset 0 0 12px #f2766b22;
   overflow: visible;
-  z-index: 1;
   text-align: center;
 }
 
@@ -38,7 +37,6 @@ body {
   background: radial-gradient(ellipse at center, transparent 50%, #000c 100%);
   background-color: rgba(8, 27, 38, 0.9);
   pointer-events: none;
-  z-index: 1;
 }
 
 h1 {
@@ -50,7 +48,7 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 2px;
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
 
 .button-group {

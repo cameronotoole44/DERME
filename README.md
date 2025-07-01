@@ -1,4 +1,4 @@
-# DERME 2.0 - Dynamic Exploit Replay and Mitigation Engine
+# Dynamic Exploit Replay and Mitigation Engine
 
 ## Overview
 
@@ -23,29 +23,29 @@ DERME is a web security demonstration tool showcasing four common vulnerabilitie
 
 ## Demo
 
-### XSS Exploit
+### System Boot
+
+![Boot Up Demo](gifs/BOOT.gif)
+
+- System booting up message.
+
+### Exploit
 
 ![XSS Demo](gifs/XSS.gif)
 
-- Unmitigated: Script executes. Mitigated: Script is escaped.
+- Unmitigated: Script executes.
 
-### SQLi Exploit
+### Mitigated Results
 
-![SQLi Demo](gifs/SQLi.gif)
+![XSS Mitigated Demo](gifs/MITIGATED.gif)
 
-- Unmitigated: Login succeeds. Mitigated: Login fails.
+- Mitigated: Login fails.
 
-### CSRF Exploit
+### Results
 
-![CSRF Demo](gifs/CSRF.gif)
+![XSS Exploit Panel Demo](gifs/PANEL.gif)
 
-- Unmitigated: Funds transfer. Mitigated: Token required.
-
-### LFI Exploit
-
-![LFI Demo](gifs/LFI.gif)
-
-- Unmitigated: File error. Mitigated: Safe file returned.
+- Movable/resizeable panels with exploit results.
 
 ## Setup
 

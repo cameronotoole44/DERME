@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import "./css/App.css";
+import HeaderBar from "./components/HeaderBar";
 import TerminalWindow from "./components/Terminal";
 import SummaryPanel from "./components/panels/SummaryPanel";
 import StatusPanel from "./components/panels/StatusPanel";
@@ -18,6 +19,12 @@ const App = () => {
   const [booting, setBooting] = useState(true);
   const [bootOutput, setBootOutput] = useState<string[]>([]);
 
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [elapsed, setElapsed] = useState<string>();
+  const [cpu, setCpu] = useState<number>();
+  const [pps, setPps] = useState<number>();
+  const [latency, setLatency] = useState<number>();
+
   useEffect(() => {
     const lines = [
       "><<<<<    ><<<<<<<<><<<<<<<    ><<       ><<><<<<<<<<",
@@ -32,8 +39,6 @@ const App = () => {
       "[ OK ] Loading Exploit Modules",
       "[ OK ] Network Layer Linked",
       "[ OK ] Payload Injection Ready",
-      "Welcome User",
-
       "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
       "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⣉⣤⣶⣿⣿⣿⣿⣶⣦⣉⣙⠿⢿⣿⣿⣿⠿⠟⣋⣉⣡⣤⣤⣉⣛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
       "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢋⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣍⠡⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣷⡌⢻⣿⣿⣿⣿⣿⣿⣿⣿",
@@ -59,20 +64,45 @@ const App = () => {
       "⢃⡒⣚⠋⣓⠀⣀⡐⢀⡚⢀⡘⢀⡀⢀⡐⣒⡒⢀⡀⢀⡀⢀⡉⢉⡉⢁⡁⢀⡀⢒⡀⠀⣃⠘⣲⠒⣒⠚⣓⠈⡄⠹⠿⠙⠿⠋⠿⠿⣿",
       "⡎⢀⣉⣀⣉⣁⣉⣁⣉⣁⣈⣁⣉⣁⣈⣁⣉⣁⣈⣁⣈⣁⣈⣁⣈⣁⣠⣤⣄⣡⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⡆⢿",
       "⡇⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢸",
-      "success, you're in",
+      "Welcome User",
     ];
 
     let idx = 0;
-    const interval = setInterval(() => {
-      setBootOutput((prev) => [...prev.slice(-15), lines[idx]]);
-      idx++;
+    const id = setInterval(() => {
+      setBootOutput((p) => [...p.slice(-15), lines[idx++]]);
       if (idx >= lines.length) {
-        clearInterval(interval);
+        clearInterval(id);
         setTimeout(() => setBooting(false), 1000);
       }
-    }, 300); // how fast it moves
-    return () => clearInterval(interval);
+    }, 300);
+    return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (startTime === null) return;
+    const id = setInterval(() => {
+      const sec = Math.floor((Date.now() - startTime) / 1000);
+      setElapsed(new Date(sec * 1000).toISOString().substring(11, 19));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [startTime]);
+
+  const generateMatrixLine = () => {
+    const chars = "01|\\/#@-=:*%";
+    const len = Math.floor(Math.random() * 60) + 20;
+    return Array.from(
+      { length: len },
+      () => chars[(Math.random() * chars.length) | 0]
+    ).join("");
+  };
+
+  const goHome = () => {
+    setView("menu");
+    setStartTime(null);
+    setElapsed(undefined);
+    setTerminalOutput([]);
+    setMatrixLines([]);
+  };
 
   const fetchExploit = async (endpoint: string, label: ExploitType) => {
     setLoading(true);
@@ -80,41 +110,57 @@ const App = () => {
     setTerminalOutput([]);
     setView(label);
 
-    const interval = setInterval(() => {
-      setMatrixLines((prev) => [...prev.slice(-15), generateMatrixLine()]);
-    }, 60);
+    setStartTime(Date.now());
+    setCpu(undefined);
+    setPps(undefined);
+    setLatency(undefined);
+
+    const animId = setInterval(
+      () =>
+        setMatrixLines((prev) => [...prev.slice(-15), generateMatrixLine()]),
+      60
+    );
 
     setTimeout(async () => {
-      clearInterval(interval);
+      clearInterval(animId);
       setMatrixLines([]);
+
       try {
         const resp = await fetch(`http://localhost:5000/${endpoint}`);
-        const data = await resp.json();
-        const output = (data.response || data.error || "Unknown Error").split(
-          "\n"
-        );
+        const raw = await resp.text();
+        let payload: string | undefined;
+
+        try {
+          const data = JSON.parse(raw);
+          payload =
+            data.response ??
+            data.result ??
+            data.message ??
+            data.error ??
+            (typeof data === "string" ? data : undefined);
+          if (!payload || !payload.trim()) payload = raw.trim();
+        } catch {
+          payload = raw.trim();
+        }
+
+        const output =
+          payload && payload.length
+            ? payload.split("\n")
+            : ["[ERROR] Exploit failed."];
+
         setTerminalOutput(output);
       } catch {
         setTerminalOutput(["[ERROR] Exploit failed."]);
       }
+
       setLoading(false);
     }, 3000);
-  };
-
-  const generateMatrixLine = () => {
-    const chars = "01|\\/#@-=:*%";
-    const length = Math.floor(Math.random() * 60) + 20;
-    return Array.from(
-      { length },
-      () => chars[Math.floor(Math.random() * chars.length)]
-    ).join("");
   };
 
   const reset = async () => {
     await fetch("http://localhost:5000/reset", { method: "POST" });
     setMitigated(false);
-    setView("menu");
-    setTerminalOutput([]);
+    goHome();
   };
 
   const applyMitigation = async () => {
@@ -159,37 +205,44 @@ const App = () => {
           <TerminalWindow
             title="Executing Exploit..."
             lines={matrixLines}
-            onExit={() => setView("menu")}
+            onExit={goHome}
           />
         </div>
       ) : (
-        <div className="app-container">
-          <h1>D.E.R.M.E</h1>
+        <>
+          <HeaderBar onHome={goHome} />
 
-          <DraggablePanel title="Terminal" defaultX={100} defaultY={80}>
-            <TerminalWindow
-              title={`Result: ${view.toUpperCase()}`}
-              lines={terminalOutput}
-              onExit={() => setView("menu")}
-            />
-          </DraggablePanel>
+          <div className="app-container">
+            <DraggablePanel title="Terminal" defaultX={100} defaultY={80}>
+              <TerminalWindow
+                title={`Result: ${view.toUpperCase()}`}
+                lines={terminalOutput}
+                onExit={goHome}
+              />
+            </DraggablePanel>
 
-          <DraggablePanel title="Summary" defaultX={460} defaultY={80}>
-            <SummaryPanel exploit={view} resultLines={terminalOutput} />
-          </DraggablePanel>
+            <DraggablePanel title="Summary" defaultX={460} defaultY={80}>
+              <SummaryPanel exploit={view} resultLines={terminalOutput} />
+            </DraggablePanel>
 
-          <DraggablePanel title="Status" defaultX={820} defaultY={80}>
-            <StatusPanel mitigated={mitigated} />
-          </DraggablePanel>
+            <DraggablePanel title="Status" defaultX={820} defaultY={80}>
+              <StatusPanel exploit={view} mitigated={mitigated} />
+            </DraggablePanel>
 
-          <DraggablePanel title="Monitor" defaultX={100} defaultY={320}>
-            <MonitorPanel />
-          </DraggablePanel>
+            <DraggablePanel title="Monitor" defaultX={100} defaultY={320}>
+              <MonitorPanel
+                cpu={cpu}
+                packetsPerSec={pps}
+                latencyMs={latency}
+                elapsed={elapsed}
+              />
+            </DraggablePanel>
 
-          <DraggablePanel title="Info" defaultX={460} defaultY={320}>
-            <InfoPanel />
-          </DraggablePanel>
-        </div>
+            <DraggablePanel title="Info" defaultX={460} defaultY={320}>
+              <InfoPanel version="2.5" build="#042" targetMode="Simulated" />
+            </DraggablePanel>
+          </div>
+        </>
       )}
     </>
   );

@@ -13,8 +13,6 @@ export default function StatusPanel({
 }: StatusProps) {
   return (
     <div className="panel-body">
-      <h3>Status</h3>
-
       {exploit && <p>Exploit&nbsp;&nbsp;: {exploit.toUpperCase()}</p>}
       {phase && <p>Phase&nbsp;&nbsp;&nbsp;&nbsp;: {phase}</p>}
       {result && <p>Result&nbsp;&nbsp;&nbsp;: {result}</p>}

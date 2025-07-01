@@ -19,8 +19,6 @@ export default function MonitorPanel({
 
   return (
     <div className="panel-body">
-      <h3>System Monitor</h3>
-
       {nothing && <p>—</p>}
 
       {cpu !== undefined && <p>CPU&nbsp;&nbsp;&nbsp;: {cpu}%</p>}

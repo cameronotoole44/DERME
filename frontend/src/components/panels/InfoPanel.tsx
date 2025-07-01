@@ -13,8 +13,6 @@ export default function InfoPanel({
 }: InfoProps) {
   return (
     <div className="panel-body">
-      <h3>Info</h3>
-
       {version && <p>Version&nbsp;&nbsp;: {version}</p>}
       {targetMode && <p>Mode: {targetMode}</p>}
       {build && <p>Build&nbsp;&nbsp;&nbsp;&nbsp;: {build}</p>}

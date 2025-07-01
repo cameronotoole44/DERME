@@ -29,7 +29,6 @@ export default function DraggablePanel({
 
   return (
     <Rnd
-      nodeRef={nodeRef}
       default={{
         x: defaultX,
         y: defaultY,

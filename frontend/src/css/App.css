@@ -11,25 +11,6 @@ body {
   overflow: hidden;
 }
 
-.app-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  max-width: 960px;
-  padding: 30px;
-  background-color: #081b26;
-  color: #f9f5ec;
-  border: 2px solid #586166;
-  box-shadow:
-    0 0 5px #f2766b44,
-    0 0 20px #f2766b33,
-    inset 0 0 12px #f2766b22;
-  overflow: visible;
-  text-align: center;
-}
-
 .app-container::before {
   content: "";
   position: absolute;
@@ -39,17 +20,6 @@ body {
   pointer-events: none;
 }
 
-h1 {
-  font-size: 22px;
-  text-align: center;
-  margin-bottom: 20px;
-  color: #f2766b;
-  text-shadow: 0 0 5px #f2766b;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  position: relative;
-  z-index: 1;
-}
 
 .button-group {
   display: flex;
@@ -123,3 +93,40 @@ button:disabled {
   text-shadow: 0 0 5px #f2766b;
 }
 
+.derme-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #081b26;
+  border-bottom: 1px solid #586166;
+  z-index: 2000;
+}
+
+.derme-title {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 14px;
+  color: #f2766b;
+  text-shadow: 0 0 5px #f2766b;
+  letter-spacing: 1px;
+}
+
+.derme-home-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid #f2766b;
+  background: transparent;
+  color: #f2766b;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.derme-home-btn:hover {
+  background-color: #f2766b22;
+  color: #f9f5ec;
+}

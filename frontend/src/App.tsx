@@ -75,7 +75,6 @@ export default function App() {
       setExploits(exploitList);
       setMitigation(status);
     } catch {
-      // Backend not available, use defaults
     }
   }
 
@@ -158,7 +157,7 @@ export default function App() {
   if (view === "menu") {
     return (
       <div className="menu">
-        <h1>D.E.R.M.E</h1>
+        <h1>VEXR</h1>
 
         <div className="exploit-grid">
           {exploits.map((exp) => (
@@ -239,7 +238,7 @@ export default function App() {
         <Panel title="Info" x={60} y={340} width={280} height={120}>
           <div className="status-row">
             <span className="status-label">Version</span>
-            <span className="status-value">2.5</span>
+            <span className="status-value">3.0</span>
           </div>
           <div className="status-row">
             <span className="status-label">Mode</span>

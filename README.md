@@ -1,6 +1,4 @@
-# D.E.R.M.E
-
-**Dynamic Exploit Replay and Mitigation Engine**
+# VEXR
 
 A web security demonstration tool showcasing common vulnerabilities with real-time exploit execution and mitigation. Simulates attacks on a vulnerable Flask app running in Docker, controlled via a React frontend.
 

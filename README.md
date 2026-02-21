@@ -1,105 +1,87 @@
-# Dynamic Exploit Replay and Mitigation Engine
+# D.E.R.M.E
 
-## Overview
+**Dynamic Exploit Replay and Mitigation Engine**
 
-DERME is a web security demonstration tool showcasing four common vulnerabilities: XSS, SQLi, CSRF, and LFI with real-time exploit execution and mitigation. Built to educate and impress, it simulates attacks on a vulnerable Flask app running in a Docker container, controlled via a sleek React frontend..
+A web security demonstration tool showcasing common vulnerabilities with real-time exploit execution and mitigation. Simulates attacks on a vulnerable Flask app running in Docker, controlled via a React frontend.
 
-### Features
+## Exploits
 
-- **Exploits**:
-  - **XSS**: Injects `<script>alert('XSS')</script>` into a welcome message.
-  - **SQLi**: Bypasses login with `admin' --`.
-  - **CSRF**: Transfers funds between users without authorization.
-  - **LFI**: Attempts to include `secret.txt`, mitigated to a safe file.
-- **Mitigation**: Toggle sanitization/parameterization to block exploits.
-- **Reset**: Restore vulnerable state for replay.
+| Type | Attack | Description |
+|------|--------|-------------|
+| **XSS** | `<script>alert('XSS')</script>` | Reflected script injection |
+| **SQLi** | `admin' --` | Authentication bypass |
+| **CSRF** | Unauthorized transfer | Missing token validation |
+| **LFI** | `../secret.txt` | Path traversal file read |
 
-### Tech Stack
+## Tech Stack
 
-- **Frontend**: React, TypeScript, Vite, CSS
-- **Backend**: Flask (Python), SQLite in-memory DB
-- **Containerization**: Docker
-- **Orchestration**: Custom Flask engine (`exploit_engine.py`)
+- **Frontend**: React, TypeScript, Vite
+- **Backend**: Flask, SQLite (in-memory)
+- **Container**: Docker (vuln_app)
+- **Orchestration**: exploit_engine.py
 
-## Demo
+## Architecture
 
-### System Boot
-
-![Boot Up Demo](gifs/BOOT.gif)
-
-- System booting up message.
-
-### Exploit
-
-![XSS Demo](gifs/XSS.gif)
-
-- Unmitigated: Script executes.
-
-### Mitigated Results
-
-![XSS Mitigated Demo](gifs/MITIGATED.gif)
-
-- Mitigated: Login fails.
-
-### Results
-
-![XSS Exploit Panel Demo](gifs/PANEL.gif)
-
-- Movable/resizeable panels with exploit results.
+```
+┌─────────────┐      ┌──────────────────┐      ┌─────────────────┐
+│   Frontend  │ ───▶ │  exploit_engine  │ ───▶ │    vuln_app     │
+│  :5173      │      │     :5000        │      │  :5001 (Docker) │
+└─────────────┘      └──────────────────┘      └─────────────────┘
+```
 
 ## Setup
 
-1.  **Clone the Repo**:
-    ```bash
-        git clone https://github.com/cameronotoole44/DERME
-        cd derme
-    ```
-2.  **Backend Setup**:
+### Prerequisites
 
-    - _Prerequisites_: Docker
+- Docker
+- Node.js
+- Python 3.x
 
-    **Virtual Environment**
+### Backend
 
-    ```bash
-        # Linux/Mac
+```bash
+# Build vulnerable app container
+cd backend/vuln_app
+docker build -t vuln-app .
 
-        cd backend/exploit_engine
-        python3 -m venv venv
-        source venv/bin/activate
-        pip install -r requirements.txt
-    ```
+# Start exploit engine
+cd ../exploit_engine
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python exploit_engine.py
+```
 
-    ```bash
-        # Windows (Command Prompt)
+### Frontend
 
-        cd backend\exploit_engine
-        python -m venv venv
-        venv\Scripts\activate
-        pip install -r requirements.txt
-    ```
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-    ```bash
-        # Windows (Git Bash)
+Open http://localhost:5173
 
-        cd backend/exploit_engine
-        python -m venv venv
-        source venv/Scripts/activate
-        pip install -r requirements.txt
-    ```
+## Demo
 
-3.  **Start Backend**
+### Exploit Execution
 
-    ```bash
-        cd backend/vuln_app
-        docker build -t vuln-app .
-        cd ../exploit_engine
-        python exploit_engine.py
-    ```
+![XSS Demo](gifs/XSS.gif)
 
-4.  **Frontend**:
-    ```bash
-    cd frontend
-    npm install
-    npm run dev
-    ```
-5.  Open http://localhost:5173 and start the exploits!
+### Mitigated Response
+
+![Mitigated Demo](gifs/MITIGATED.gif)
+
+### Result Panels
+
+![Panel Demo](gifs/PANEL.gif)
+
+## API
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/exploits` | GET | List available exploits |
+| `/exploit/<id>` | POST | Run exploit |
+| `/status` | GET | Get mitigation state |
+| `/mitigate/<type>` | POST | Apply mitigation |
+| `/reset` | POST | Reset all mitigations |

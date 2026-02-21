@@ -1,28 +1,25 @@
-import "../css/Terminal.css";
-
-type TerminalWindowProps = {
-  title: string;
+interface TerminalProps {
   lines: string[];
-  onExit: () => void;
-};
+  showCursor?: boolean;
+}
 
-const TerminalWindow = ({ title, lines, onExit }: TerminalWindowProps) => {
+export default function Terminal({ lines, showCursor = true }: TerminalProps) {
   return (
-    <div className="terminal-window">
-      <div className="terminal-header">
-        <span>{title}</span>
-        <button onClick={onExit}>Exit</button>
-      </div>
-      <div className="terminal-body">
+    <div className="terminal" style={{ height: "100%" }}>
+      <div className="terminal-content">
         {lines.map((line, idx) => (
           <div key={idx} className="terminal-line">
-            <span>&gt;</span> {line}
+            <span className="prompt">&gt;</span>
+            <span className="text">{line}</span>
           </div>
         ))}
-        <div className="cursor" />
+        {showCursor && (
+          <div className="terminal-line">
+            <span className="prompt">&gt;</span>
+            <span className="terminal-cursor" />
+          </div>
+        )}
       </div>
     </div>
   );
-};
-
-export default TerminalWindow;
+}

@@ -1,81 +1,60 @@
 import { useState, useEffect } from "react";
-import "./css/App.css";
-import HeaderBar from "./components/HeaderBar";
-import TerminalWindow from "./components/Terminal";
-import SummaryPanel from "./components/panels/SummaryPanel";
-import StatusPanel from "./components/panels/StatusPanel";
-import MonitorPanel from "./components/panels/MonitorPanel";
-import InfoPanel from "./components/panels/InfoPanel";
-import DraggablePanel from "./components/panels/DraggablePanel";
+import "./css/styles.css";
+import { api, Exploit, ExploitResult, MitigationStatus } from "./api";
+import Header from "./components/Header";
+import Panel from "./components/Panel";
+import Terminal from "./components/Terminal";
 
-type ExploitType = "menu" | "xss" | "sqli" | "csrf" | "lfi";
+type View = "menu" | "loading" | "result";
 
-const App = () => {
-  const [view, setView] = useState<ExploitType>("menu");
-  const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [mitigated, setMitigated] = useState(false);
-  const [matrixLines, setMatrixLines] = useState<string[]>([]);
-  const [booting, setBooting] = useState(true);
-  const [bootOutput, setBootOutput] = useState<string[]>([]);
+const DEFAULT_EXPLOITS: Exploit[] = [
+  {
+    id: "xss_reflected",
+    name: "Reflected XSS",
+    category: "xss",
+    description: "Injects script tags into reflected user input",
+    payloads: [],
+  },
+  {
+    id: "sqli_login",
+    name: "SQL Injection",
+    category: "sqli",
+    description: "Bypasses authentication using SQL injection",
+    payloads: [],
+  },
+  {
+    id: "csrf_transfer",
+    name: "CSRF Transfer",
+    category: "csrf",
+    description: "Performs unauthorized fund transfer",
+    payloads: [],
+  },
+  {
+    id: "lfi_path_traversal",
+    name: "LFI",
+    category: "lfi",
+    description: "Reads arbitrary files via path traversal",
+    payloads: [],
+  },
+];
 
+export default function App() {
+  const [view, setView] = useState<View>("menu");
+  const [exploits, setExploits] = useState<Exploit[]>(DEFAULT_EXPLOITS);
+  const [currentExploit, setCurrentExploit] = useState<string | null>(null);
+  const [result, setResult] = useState<ExploitResult | null>(null);
+  const [terminalLines, setTerminalLines] = useState<string[]>([]);
+  const [mitigation, setMitigation] = useState<MitigationStatus>({
+    xss: false,
+    sqli: false,
+    csrf: false,
+    lfi: false,
+  });
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [elapsed, setElapsed] = useState<string>();
-  const [cpu, setCpu] = useState<number>();
-  const [pps, setPps] = useState<number>();
-  const [latency, setLatency] = useState<number>();
+  const [elapsed, setElapsed] = useState("00:00:00");
 
   useEffect(() => {
-    const lines = [
-      "><<<<<    ><<<<<<<<><<<<<<<    ><<       ><<><<<<<<<<",
-      "><<   ><< ><<      ><<    ><<  >< ><<   ><<<><<",
-      "><<    ><<><<      ><<    ><<  ><< ><< > ><<><< ",
-      "><<    ><<><<<<<<  >< ><<      ><<  ><<  ><<><<<<<<  ",
-      "><<    ><<><<      ><<  ><<    ><<   ><  ><<><< ",
-      "><<   ><< ><<      ><<    ><<  ><<       ><<><< ",
-      "><<<<<    ><<<<<<<<><<      ><<><<       ><<><<<<<<<<",
-      "",
-      "[BOOT] Initializing Core Systems...",
-      "[ OK ] Loading Exploit Modules",
-      "[ OK ] Network Layer Linked",
-      "[ OK ] Payload Injection Ready",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⣉⣤⣶⣿⣿⣿⣿⣶⣦⣉⣙⠿⢿⣿⣿⣿⠿⠟⣋⣉⣡⣤⣤⣉⣛⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢋⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣦⣍⠡⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣷⡌⢻⣿⣿⣿⣿⣿⣿⣿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⣡⣾⣿⣿⣿⣿⣿⠿⠟⢛⣛⣛⣛⠛⠻⢿⣿⣿⣆⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡌⣿⣿⣿⣿⣿⣿⣿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⠋⣼⣿⣿⣿⣿⡟⣉⣤⣶⣾⣿⣿⣿⣿⣿⣷⣦⣬⣙⡛⠀⣛⣩⣭⣭⣭⣭⣭⣥⣭⣬⣍⣁⡘⢿⣿⣿⣿⣿⣿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⠏⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠛⢛⣛⣛⣛⣛⠒⠌⠛⢿⣿⣿⣿⡿⠿⠿⠟⠛⠛⠛⠓⠦⠌⠙⠻⣿⣿",
-      "⣿⣿⣿⣿⡿⠿⠀⠈⠙⠛⠻⠿⢿⣿⠿⠿⠛⠛⠛⠉⠐⠒⠚⠉⠉⠐⠒⠂⠉⠉⠓⠒⠦⠋⡩⠔⠒⠀⠀⠉⠉⠉⠉⠉⠁⠀⠀⠀⠈⠛",
-      "⣿⣿⣿⠛⣤⡆⢸⣷⣶⣦⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⢀⠀⠀⠀⠀",
-      "⣿⡿⢡⣾⣿⣇⣸⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢜⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀",
-      "⡿⢁⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢾⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-      "⢡⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣆⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⢀⣤⣶⣶⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣾⣿⣿⠿⣿⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣶⣶⠶⠖⢒⣀⣤⣶⣾⣿⣿⣿⣿⣿⣦⣤⡀⢭⣤⣤⣤⣴⣄⢒⢶⣾⣿⣿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣿⣿⣿⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⣿⣿⣿⣿⣿⣿⣆⠙⣿⣿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢁⣤⣶⣶⣶⣌⠙⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⢻⣿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⣿⣿⡿⠿⣿⣿⣿⣶⣦⣌⣙⠛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠸⢿⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡈⢻⣿⣷⣶⣤⣝⡛⠛⠿⣿⣿⣷⣶⣶⣮⣭⣭⣭⣝⣛⡛⠛⠛⠛⠛⠻⠟⠛⠛⢛⣫⣥⣴⣾⡿⢸⣿",
-      "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣤⡙⠻⢿⣿⣿⣿⣷⣶⣦⣬⣭⣙⡙⠛⠛⠻⠿⠿⠿⠿⠿⠿⣿⣿⣷⣾⣿⡿⠿⠿⠟⠛⣩⣶⣿⣿",
-      "⣤⠄⠉⠙⠛⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣤⣍⡛⠛⠿⠿⣿⣿⣿⣿⣿⣿⣾⣿⣷⣿⣶⣿⣶⣶⣶⣶⣶⠶⠶⠛⠚⠈⣁⣬⡍⠥⢠",
-      "⣷⠡⠈⠋⠳⠂⠔⠀⣈⠛⠻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣤⣤⣤⣤⣤⣈⣉⣉⣉⣉⡉⡙⠛⠛⠋⡀⠐⢶⣶⠾⠡⣨⡽⣆⢢⣺",
-      "⣿⠄⠀⠈⡕⠀⠴⣿⣿⡿⢷⠂⢤⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⢠⠤⠲⠀⡈⢹⠷⠄⠑⣿⠄⠘⡀⠈⠉⣁",
-      "⣀⠀⠀⣁⣀⠀⢀⠊⠀⢰⠀⣆⠀⠡⡈⠻⠿⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠋⣠⢁⠀⠆⠀⠀⡈⢂⠰⣤⣬⣭⣤⣤⣤⣤⣤",
-      "⢃⡒⣚⠋⣓⠀⣀⡐⢀⡚⢀⡘⢀⡀⢀⡐⣒⡒⢀⡀⢀⡀⢀⡉⢉⡉⢁⡁⢀⡀⢒⡀⠀⣃⠘⣲⠒⣒⠚⣓⠈⡄⠹⠿⠙⠿⠋⠿⠿⣿",
-      "⡎⢀⣉⣀⣉⣁⣉⣁⣉⣁⣈⣁⣉⣁⣈⣁⣉⣁⣈⣁⣈⣁⣈⣁⣈⣁⣠⣤⣄⣡⣤⣤⣤⣤⣤⣤⣤⣴⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⡆⢿",
-      "⡇⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢸",
-      "Welcome User",
-    ];
-
-    let idx = 0;
-    const id = setInterval(() => {
-      setBootOutput((p) => [...p.slice(-15), lines[idx++]]);
-      if (idx >= lines.length) {
-        clearInterval(id);
-        setTimeout(() => setBooting(false), 1000);
-      }
-    }, 300);
-    return () => clearInterval(id);
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -87,165 +66,191 @@ const App = () => {
     return () => clearInterval(id);
   }, [startTime]);
 
-  const generateMatrixLine = () => {
-    const chars = "01|\\/#@-=:*%";
-    const len = Math.floor(Math.random() * 60) + 20;
-    return Array.from(
-      { length: len },
-      () => chars[(Math.random() * chars.length) | 0]
-    ).join("");
-  };
+  async function loadInitialData() {
+    try {
+      const [exploitList, status] = await Promise.all([
+        api.getExploits(),
+        api.getStatus(),
+      ]);
+      setExploits(exploitList);
+      setMitigation(status);
+    } catch {
+      // Backend not available, use defaults
+    }
+  }
 
-  const goHome = () => {
-    setView("menu");
-    setStartTime(null);
-    setElapsed(undefined);
-    setTerminalOutput([]);
-    setMatrixLines([]);
-  };
-
-  const fetchExploit = async (endpoint: string, label: ExploitType) => {
-    setLoading(true);
-    setMatrixLines([]);
-    setTerminalOutput([]);
-    setView(label);
-
+  async function runExploit(exploitId: string) {
+    setCurrentExploit(exploitId);
+    setView("loading");
+    setTerminalLines([]);
     setStartTime(Date.now());
-    setCpu(undefined);
-    setPps(undefined);
-    setLatency(undefined);
 
-    const animId = setInterval(
-      () =>
-        setMatrixLines((prev) => [...prev.slice(-15), generateMatrixLine()]),
-      60
+    try {
+      const res = await api.runExploit(exploitId);
+      setResult(res);
+
+      const responseText =
+        typeof res.response === "string"
+          ? res.response
+          : JSON.stringify(res.response, null, 2);
+
+      const lines = [
+        `[EXPLOIT] ${exploitId.toUpperCase()}`,
+        `[PAYLOAD] ${res.payload_used ?? "N/A"}`,
+        "",
+        `[SUCCESS] ${res.success ? "YES" : "NO"}`,
+        res.error ? `[ERROR] ${res.error}` : "",
+        "",
+        "[RESPONSE]",
+        ...responseText.split("\n"),
+      ].filter(Boolean);
+      setTerminalLines(lines);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      setTerminalLines([`[ERROR] ${msg}`]);
+      setResult(null);
+    }
+
+    setView("result");
+  }
+
+  async function applyMitigation(type: string) {
+    if (mitigation[type]) return; // already mitigated
+    try {
+      const status = await api.mitigate(type);
+      setMitigation(status);
+    } catch {
+      setMitigation((prev) => ({ ...prev, [type]: true }));
+    }
+  }
+
+  async function resetAll() {
+    try {
+      const status = await api.reset();
+      setMitigation(status);
+    } catch {
+      setMitigation({ xss: false, sqli: false, csrf: false, lfi: false });
+    }
+  }
+
+  function goHome() {
+    setView("menu");
+    setCurrentExploit(null);
+    setResult(null);
+    setTerminalLines([]);
+    setStartTime(null);
+    setElapsed("00:00:00");
+  }
+
+  if (view === "loading") {
+    return (
+      <div className="loading">
+        <div className="loading-text">
+          Executing {currentExploit?.toUpperCase()}...
+        </div>
+        <div className="loading-bar">
+          <div className="loading-bar-fill" />
+        </div>
+      </div>
     );
+  }
 
-    setTimeout(async () => {
-      clearInterval(animId);
-      setMatrixLines([]);
+  if (view === "menu") {
+    return (
+      <div className="menu">
+        <h1>D.E.R.M.E</h1>
 
-      try {
-        const resp = await fetch(`http://localhost:5000/${endpoint}`);
-        const raw = await resp.text();
-        let payload: string | undefined;
+        <div className="exploit-grid">
+          {exploits.map((exp) => (
+            <div
+              key={exp.id}
+              className="exploit-card"
+              onClick={() => runExploit(exp.id)}
+            >
+              <div className="name">{exp.name}</div>
+              <div className="category">{exp.category}</div>
+            </div>
+          ))}
+        </div>
 
-        try {
-          const data = JSON.parse(raw);
-          payload =
-            data.response ??
-            data.result ??
-            data.message ??
-            data.error ??
-            (typeof data === "string" ? data : undefined);
-          if (!payload || !payload.trim()) payload = raw.trim();
-        } catch {
-          payload = raw.trim();
-        }
-
-        const output =
-          payload && payload.length
-            ? payload.split("\n")
-            : ["[ERROR] Exploit failed."];
-
-        setTerminalOutput(output);
-      } catch {
-        setTerminalOutput(["[ERROR] Exploit failed."]);
-      }
-
-      setLoading(false);
-    }, 3000);
-  };
-
-  const reset = async () => {
-    await fetch("http://localhost:5000/reset", { method: "POST" });
-    setMitigated(false);
-    goHome();
-  };
-
-  const applyMitigation = async () => {
-    await fetch("http://localhost:5000/mitigate", { method: "POST" });
-    setMitigated(true);
-  };
+        <div className="menu-controls">
+          <button className="secondary" onClick={resetAll}>
+            Reset All
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      {booting ? (
-        <div className="boot-center">
-          <TerminalWindow
-            title="System Boot"
-            lines={bootOutput}
-            onExit={() => {}}
-          />
-        </div>
-      ) : view === "menu" ? (
-        <div className="menu-center">
-          <h1>D.E.R.M.E</h1>
-          <div className="button-group">
-            <button onClick={() => fetchExploit("exploit", "xss")}>
-              Run XSS
-            </button>
-            <button onClick={() => fetchExploit("exploit_sqli", "sqli")}>
-              Run SQLi
-            </button>
-            <button onClick={() => fetchExploit("exploit_csrf", "csrf")}>
-              Run CSRF
-            </button>
-            <button onClick={() => fetchExploit("exploit_lfi", "lfi")}>
-              Run LFI
-            </button>
-            <button onClick={applyMitigation} disabled={mitigated}>
-              Mitigate
-            </button>
-            <button onClick={reset}>Reset</button>
+      <Header onHome={goHome} currentExploit={currentExploit ?? undefined} />
+
+      <div className="workspace">
+        <Panel title="Terminal" x={60} y={20} width={500} height={300}>
+          <Terminal lines={terminalLines} />
+        </Panel>
+
+        <Panel title="Result" x={580} y={20} width={280} height={160}>
+          <div className="status-row">
+            <span className="status-label">Exploit</span>
+            <span className="status-value">
+              {currentExploit?.toUpperCase()}
+            </span>
           </div>
-        </div>
-      ) : loading ? (
-        <div className="boot-center">
-          <TerminalWindow
-            title="Executing Exploit..."
-            lines={matrixLines}
-            onExit={goHome}
-          />
-        </div>
-      ) : (
-        <>
-          <HeaderBar onHome={goHome} />
-
-          <div className="app-container">
-            <DraggablePanel title="Terminal" defaultX={100} defaultY={80}>
-              <TerminalWindow
-                title={`Result: ${view.toUpperCase()}`}
-                lines={terminalOutput}
-                onExit={goHome}
-              />
-            </DraggablePanel>
-
-            <DraggablePanel title="Summary" defaultX={460} defaultY={80}>
-              <SummaryPanel exploit={view} resultLines={terminalOutput} />
-            </DraggablePanel>
-
-            <DraggablePanel title="Status" defaultX={820} defaultY={80}>
-              <StatusPanel exploit={view} mitigated={mitigated} />
-            </DraggablePanel>
-
-            <DraggablePanel title="Monitor" defaultX={100} defaultY={320}>
-              <MonitorPanel
-                cpu={cpu}
-                packetsPerSec={pps}
-                latencyMs={latency}
-                elapsed={elapsed}
-              />
-            </DraggablePanel>
-
-            <DraggablePanel title="Info" defaultX={460} defaultY={320}>
-              <InfoPanel version="2.5" build="#042" targetMode="Simulated" />
-            </DraggablePanel>
+          <div className="status-row">
+            <span className="status-label">Status</span>
+            <span
+              className={`status-value ${result?.success ? "success" : "error"}`}
+            >
+              {result?.success ? "Success" : "Failed"}
+            </span>
           </div>
-        </>
-      )}
+          <div className="status-row">
+            <span className="status-label">Elapsed</span>
+            <span className="status-value">{elapsed}</span>
+          </div>
+        </Panel>
+
+        <Panel title="Mitigations" x={580} y={220} width={280} height={220}>
+          <div className="mitigation-list">
+            {Object.entries(mitigation).map(([type, active]) => (
+              <div key={type} className="mitigation-item">
+                <span className="label">{type}</span>
+                <button
+                  className={`small ${active ? "secondary" : ""}`}
+                  onClick={() => applyMitigation(type)}
+                  disabled={active}
+                >
+                  {active ? "Active" : "Apply"}
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            className="secondary"
+            style={{ marginTop: "12px", width: "100%" }}
+            onClick={resetAll}
+          >
+            Reset All
+          </button>
+        </Panel>
+
+        <Panel title="Info" x={60} y={340} width={280} height={120}>
+          <div className="status-row">
+            <span className="status-label">Version</span>
+            <span className="status-value">2.5</span>
+          </div>
+          <div className="status-row">
+            <span className="status-label">Mode</span>
+            <span className="status-value">Simulated</span>
+          </div>
+          <div className="status-row">
+            <span className="status-label">Target</span>
+            <span className="status-value">localhost:5001</span>
+          </div>
+        </Panel>
+      </div>
     </>
   );
-};
-
-export default App;
+}

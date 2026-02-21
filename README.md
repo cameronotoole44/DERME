@@ -6,12 +6,12 @@ A web security demonstration tool showcasing common vulnerabilities with real-ti
 
 ## Exploits
 
-| Type | Attack | Description |
-|------|--------|-------------|
-| **XSS** | `<script>alert('XSS')</script>` | Reflected script injection |
-| **SQLi** | `admin' --` | Authentication bypass |
-| **CSRF** | Unauthorized transfer | Missing token validation |
-| **LFI** | `../secret.txt` | Path traversal file read |
+| Type     | Attack                          | Description                |
+| -------- | ------------------------------- | -------------------------- |
+| **XSS**  | `<script>alert('XSS')</script>` | Reflected script injection |
+| **SQLi** | `admin' --`                     | Authentication bypass      |
+| **CSRF** | Unauthorized transfer           | Missing token validation   |
+| **LFI**  | `../secret.txt`                 | Path traversal file read   |
 
 ## Tech Stack
 
@@ -64,24 +64,28 @@ Open http://localhost:5173
 
 ## Demo
 
-### Exploit Execution
+### Menu
 
-![XSS Demo](gifs/XSS.gif)
+![Menu](gifs/menu.png)
 
-### Mitigated Response
+### Unmitigated
 
-![Mitigated Demo](gifs/MITIGATED.gif)
+![Unmitigated](gifs/unmitigated.png)
 
-### Result Panels
+### Mitigated
 
-![Panel Demo](gifs/PANEL.gif)
+![Mitigated](gifs/mitigated.png)
+
+### Workspace
+
+![Workspace](gifs/workspace.gif)
 
 ## API
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/exploits` | GET | List available exploits |
-| `/exploit/<id>` | POST | Run exploit |
-| `/status` | GET | Get mitigation state |
-| `/mitigate/<type>` | POST | Apply mitigation |
-| `/reset` | POST | Reset all mitigations |
+| Endpoint           | Method | Description             |
+| ------------------ | ------ | ----------------------- |
+| `/exploits`        | GET    | List available exploits |
+| `/exploit/<id>`    | POST   | Run exploit             |
+| `/status`          | GET    | Get mitigation state    |
+| `/mitigate/<type>` | POST   | Apply mitigation        |
+| `/reset`           | POST   | Reset all mitigations   |

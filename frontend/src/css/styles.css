@@ -1,15 +1,14 @@
 :root {
-  --bg-primary: #081b26;
-  --bg-panel: rgba(8, 27, 38, 0.85);
-  --bg-header: #0d2533;
-  --text-primary: #f9f5ec;
-  --text-dim: #8a9499;
-  --accent: #f2766b;
-  --accent-glow: rgba(242, 118, 107, 0.3);
-  --border: rgba(88, 97, 102, 0.5);
-  --success: #4ade80;
-  --error: #ef4444;
-  --font-mono: "IBM Plex Mono", monospace;
+--bg-primary: #0a0f0a;
+--bg-panel: rgba(10, 15, 10, 0.85);
+--bg-header: #0f1a0f;
+--text-primary: #e8f5e0;
+--text-dim: #5a7a50;
+--accent: #aaff00;
+--accent-glow: rgba(170, 255, 0, 0.3);
+--border: rgba(170, 255, 0, 0.15);
+--success: #aaff00;
+--error: #ff2244;  --font-mono: "IBM Plex Mono", monospace;
 }
 
 * {
